@@ -2,6 +2,7 @@ import dataclasses
 
 import numpy as np
 import scipy.ndimage as sn
+import tqdm
 
 
 @dataclasses.dataclass
@@ -178,11 +179,13 @@ def gen_data_points(gen_data_param: GenDataParam) -> tuple[np.ndarray, np.ndarra
 
     points = []
     size_arr = np.array(gen_data_param.size)
-    while len(points) < gen_data_param.num:
-        sampled_point = np.random.random(dim)
+    with tqdm.tqdm(total=gen_data_param.num) as p_bar:
+        while len(points) < gen_data_param.num:
+            sampled_point = np.random.random(dim)
 
-        if _is_adopted(np.random.random(), sampled_point, dpd, size_arr):
-            points.append(sampled_point)
+            if _is_adopted(np.random.random(), sampled_point, dpd, size_arr):
+                points.append(sampled_point)
+                p_bar.update(1)
     return np.array(points), dpd
 
 
