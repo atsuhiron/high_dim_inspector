@@ -3,6 +3,10 @@ import dataclasses
 import numpy as np
 import scipy.ndimage as sn
 import tqdm
+import numba
+
+
+NUMBA_OPT = {"cache": True, "nopython": True}
 
 
 @dataclasses.dataclass
@@ -44,7 +48,14 @@ class GenDataParam:
     seed: int = None
 
 
-def _normalize_0_1(arr: np.ndarray) -> np.ndarray:
+@numba.jit("f4[:, :](f4[:, :])", **NUMBA_OPT)
+def _normalize_0_1_32bit(arr: np.ndarray) -> np.ndarray:
+    val_range = np.max(arr) - np.min(arr)
+    return (arr - np.min(arr)) / val_range
+
+
+@numba.jit("f8[:, :](f8[:, :])", **NUMBA_OPT)
+def _normalize_0_1_64bit(arr: np.ndarray) -> np.ndarray:
     val_range = np.max(arr) - np.min(arr)
     return (arr - np.min(arr)) / val_range
 
@@ -152,9 +163,11 @@ def _is_adopted(ref_val: float, point: np.ndarray, dist: np.ndarray, size: np.nd
     return ref_val < apx_val
 
 
-def _gen_dpd(noise: np.ndarray, limb_att_coef: np.ndarray) -> np.ndarray:
+@numba.jit("f4[:, :](f4[:, :], f4[:, :])", **NUMBA_OPT)
+def _gen_dpd_32bit(noise: np.ndarray, limb_att_coef: np.ndarray) -> np.ndarray:
     """
     データ分布と周辺減衰を元にして最終的なデータ分布を返す
+    np.float32 用の関数
 
     Parameters
     ----------
@@ -167,14 +180,38 @@ def _gen_dpd(noise: np.ndarray, limb_att_coef: np.ndarray) -> np.ndarray:
     -------
     dpd : np.ndarray
     """
-    dpd = _normalize_0_1(_normalize_0_1(noise) * _normalize_0_1(limb_att_coef))
+    dpd = _normalize_0_1_32bit(_normalize_0_1_32bit(noise) * _normalize_0_1_32bit(limb_att_coef))
+    return dpd ** 2
+
+
+@numba.jit("f8[:, :](f8[:, :], f8[:, :])", **NUMBA_OPT)
+def _gen_dpd_64bit(noise: np.ndarray, limb_att_coef: np.ndarray) -> np.ndarray:
+    """
+    データ分布と周辺減衰を元にして最終的なデータ分布を返す
+    np.float64 用の関数
+
+    Parameters
+    ----------
+    noise : np.ndarray
+        データ分布
+    limb_att_coef : np.ndarray
+        周辺減衰
+
+    Returns
+    -------
+    dpd : np.ndarray
+    """
+    dpd = _normalize_0_1_64bit(_normalize_0_1_64bit(noise) * _normalize_0_1_64bit(limb_att_coef))
     return dpd ** 2
 
 
 def gen_data_points(gen_data_param: GenDataParam) -> tuple[np.ndarray, np.ndarray]:
     perlin = _gen_noise_distribution(gen_data_param)
     limb_att_coef = _gen_limb_attenuation_dist(gen_data_param)
-    dpd = _gen_dpd(perlin, limb_att_coef)
+    if gen_data_param.use_float32:
+        dpd = _gen_dpd_32bit(perlin, limb_att_coef)
+    else:
+        dpd = _gen_dpd_64bit(perlin, limb_att_coef)
     dim = len(gen_data_param.size)
 
     points = []
