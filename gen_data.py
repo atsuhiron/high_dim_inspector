@@ -12,6 +12,8 @@ NUMBA_OPT = {"cache": True, "nopython": True}
 @dataclasses.dataclass
 class GenDataParam:
     """
+    Parameters
+    ----------
     num : int
         生成するデータ点の数
 
