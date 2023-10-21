@@ -38,17 +38,28 @@ This script is used to amplify the sparseness and density of the distribution of
 import numpy as np
 import sparse_dense_booster as sdb
 
-param = sdb.SDBParam(
-        iter_num=10,      ## Number of iteration
-        min_dist=0.05,    ## Distance at which the gravitational force reaches its maximum value
-        pot_peak=0.6,     ## Distance where attraction and repulsion switch
-        amplitude=0.6,    ## Coefficient of force strength
-        delta_t=0.01      ## time step size
-    )
-
 points = np.random.random((10, 2)).astype(np.float32)
+
+param = sdb.create_sdb_param(
+    points,
+    amplitude=0.6,   ## Coefficient of force strength
+    t_end=0.2        ## Time to act on amplification
+)
 boosted_points = sdb.boost(points, param)
 ```
 
 `boosted_points` are data points whose sparsity and density have been amplified.
 The amplification action is quite sensitive to the value of `SDBParam`, so you will most likely have to repeat the trial-and-error process.
+Normally, helper functions like the above are used, but it is also possible to set all values manually.
+
+```python
+import sparse_dense_booster as sdb
+
+param = sdb.SDBParam(
+    iter_num=10,      ## Number of iteration
+    min_dist=0.05,    ## Distance at which the gravitational force reaches its maximum value
+    pot_peak=0.6,     ## Distance where attraction and repulsion switch
+    amplitude=0.6,    ## Coefficient of force strength
+    delta_t=0.01      ## time step size
+)
+```

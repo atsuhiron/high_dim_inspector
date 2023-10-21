@@ -36,17 +36,28 @@ sampling_points, distribution = gen_data.gen_data_points(param)
 import numpy as np
 import sparse_dense_booster as sdb
 
-param = sdb.SDBParam(
-        iter_num=10,      ## イテレーション回数
-        min_dist=0.05,    ## 引力が最大値になる距離
-        pot_peak=0.6,     ## 引力と斥力が切り替わる距離
-        amplitude=0.6,    ## 力の強さを表す係数
-        delta_t=0.01      ## 時間の刻み幅
-    )
-
 points = np.random.random((10, 2)).astype(np.float32)
+
+param = sdb.create_sdb_param(
+    points,
+    amplitude=0.6,   ## 増幅の強さを表す係数
+    t_end=0.2        ## 増幅を作用させる時間
+)
 boosted_points = sdb.boost(points, param)
 ```
 
 `boosted_points` が疎密が増幅されたデータ点の座標です。
 増幅作用は `SDBParam` の値に対してかなり鋭敏に反応するので、ほとんどの場合試行錯誤を繰り返すことになると思います。
+通常は上記のようなヘルパー関数を使用しますが、すべての値を手動で設定することも可能です。
+
+```python
+import sparse_dense_booster as sdb
+
+param = sdb.SDBParam(
+    iter_num=10,      ## イテレーション回数
+    min_dist=0.05,    ## 引力が最大値になる距離
+    pot_peak=0.6,     ## 引力と斥力が切り替わる距離
+    amplitude=0.6,    ## 力の強さを表す係数
+    delta_t=0.01      ## 時間の刻み幅
+)
+```
