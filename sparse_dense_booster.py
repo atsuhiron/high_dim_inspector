@@ -107,7 +107,7 @@ def calc_dist_sq(relative_pos: np.ndarray) -> np.ndarray:
 
 
 @numba.jit(**NUMBA_OPT)
-def calc_force(pos: np.ndarray, shift: np.float32, amp: np.float32, force_uplim: np.float32) -> np.ndarray:
+def _calc_force(pos: np.ndarray, shift: np.float32, amp: np.float32, force_uplim: np.float32) -> np.ndarray:
     """
     各質点にかかる力を計算する
     
@@ -139,7 +139,7 @@ def calc_force(pos: np.ndarray, shift: np.float32, amp: np.float32, force_uplim:
     relative_pos = calc_relative_pos(pos)
 
     # (N, N)
-    non_zero_dist_sq = (calc_dist_sq(relative_pos) + np.eye(len(relative_pos)))
+    non_zero_dist_sq = calc_dist_sq(relative_pos) + np.eye(len(relative_pos))
 
     # (N, N)
     force_coef = np.minimum(amp / non_zero_dist_sq - shift, force_uplim)
@@ -217,7 +217,7 @@ def step(pos: np.ndarray,
         shape は `(N, D)`
         dtype は `np.float32`
     """
-    f = calc_force(pos, shift, amp, force_uplim).sum(axis=0)
+    f = _calc_force(pos, shift, amp, force_uplim).sum(axis=0)
     vel += f * delta_t
     pos += vel * delta_t
     return pos, vel
@@ -255,21 +255,57 @@ def boost(points: np.ndarray, sdb_param: SDBParam) -> np.ndarray:
     return points * s + m
 
 
+def create_sdb_param(pos: np.ndarray, amplitude: float, t_end: float) -> SDBParam:
+    """
+    `SDBParam` を生成する関数
+
+    Parameters
+    ----------
+    pos : np.ndarray
+        絶対位置を表す配列
+        shape は `(N, D)`
+        dtype は `np.float32`
+
+    t_end : float
+        増幅を作用させる時間
+
+    amplitude : float
+        引力・斥力に乗する値
+
+    Returns
+    -------
+    param : SDBParam
+    """
+
+    num = pos.shape[0]
+
+    relative_pos = calc_relative_pos(pos)
+    dist_sq = calc_dist_sq(relative_pos) * np.triu(np.ones((num, num), dtype=np.float32))
+    dist_sq = dist_sq.ravel()
+    dist_non_zero = np.sqrt(np.sort(dist_sq[dist_sq != 0]))
+    shorter_outlier_index = max(1, int(np.ceil(0.005 * num**2)))
+
+    min_dist = dist_non_zero[shorter_outlier_index]
+    pot_peak = np.median(dist_non_zero)
+    delta_t = 0.01
+    iter_num = int(t_end / delta_t)
+    return SDBParam(iter_num, min_dist, pot_peak, amplitude, delta_t)
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+    import gen_data
 
-    np.random.seed(4224)
-    param = SDBParam(
-        iter_num=10,
-        min_dist=0.05,
-        pot_peak=0.6,
-        amplitude=0.6,
-        delta_t=0.01
+    gd_param = gen_data.GenDataParam(
+        num=500, size=(32, 32, 32), power=0.6, max_scale=12, attenuation_coef=0.001, use_float32=True
     )
+    _pos, _ = gen_data.gen_data_points(gd_param)
 
-    _pos = np.random.random((500, 6)).astype(np.float16).astype(np.float32)
+    sdb_param = create_sdb_param(_pos, 0.6, 0.2)
+    print(sdb_param)
+
     plt.plot(_pos[:, 1], _pos[:, 0], "o", label="before")
-    _pos = boost(_pos, param)
+    _pos = boost(_pos, sdb_param)
     plt.plot(_pos[:, 1], _pos[:, 0], "o", label="after")
     plt.legend()
     plt.show()
