@@ -257,7 +257,7 @@ def boost(points: np.ndarray, sdb_param: SDBParam) -> np.ndarray:
     return points * s + m
 
 
-def create_sdb_param(pos: np.ndarray, amplitude: float, t_end: float) -> SDBParam:
+def create_sdb_param(pos: np.ndarray, base_amp: float, t_end: float) -> SDBParam:
     """
     `SDBParam` を生成する関数
 
@@ -271,7 +271,7 @@ def create_sdb_param(pos: np.ndarray, amplitude: float, t_end: float) -> SDBPara
     t_end : float
         増幅を作用させる時間
 
-    amplitude : float
+    base_amp : float
         引力・斥力に乗する値
 
     Returns
@@ -292,6 +292,7 @@ def create_sdb_param(pos: np.ndarray, amplitude: float, t_end: float) -> SDBPara
     pot_peak = np.median(dist_non_zero)
     delta_t = 0.01
     iter_num = int(t_end / delta_t)
+    amplitude = base_amp * np.sqrt(pos.shape[1] / 2)
     return SDBParam(iter_num, min_dist, pot_peak, amplitude, delta_t)
 
 
