@@ -140,6 +140,8 @@ def _calc_force(pos: np.ndarray, shift: np.float32, amp: np.float32, force_uplim
 
     # (N, N)
     non_zero_dist_sq = calc_dist_sq(relative_pos) + np.eye(len(relative_pos))
+    zero_filter = (non_zero_dist_sq == 0.0).astype(np.float32)
+    non_zero_dist_sq += zero_filter
 
     # (N, N)
     force_coef = np.minimum(amp / non_zero_dist_sq - shift, force_uplim)
@@ -278,8 +280,9 @@ def create_sdb_param(pos: np.ndarray, amplitude: float, t_end: float) -> SDBPara
     """
 
     num = pos.shape[0]
+    norm_pos, _, _ = normalize(pos)
 
-    relative_pos = calc_relative_pos(pos)
+    relative_pos = calc_relative_pos(norm_pos)
     dist_sq = calc_dist_sq(relative_pos) * np.triu(np.ones((num, num), dtype=np.float32))
     dist_sq = dist_sq.ravel()
     dist_non_zero = np.sqrt(np.sort(dist_sq[dist_sq != 0]))
