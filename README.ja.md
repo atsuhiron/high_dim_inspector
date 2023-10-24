@@ -40,7 +40,7 @@ points = np.random.random((10, 2)).astype(np.float32)
 
 param = sdb.create_sdb_param(
     points,
-    amplitude=0.6,   ## 増幅の強さを表す係数
+    base_amp=0.6,   ## 増幅の強さを表す係数
     t_end=0.2        ## 増幅を作用させる時間
 )
 boosted_points = sdb.boost(points, param)

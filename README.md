@@ -42,7 +42,7 @@ points = np.random.random((10, 2)).astype(np.float32)
 
 param = sdb.create_sdb_param(
     points,
-    amplitude=0.6,   ## Coefficient of force strength
+    base_amp=0.6,   ## Coefficient of force strength
     t_end=0.2        ## Time to act on amplification
 )
 boosted_points = sdb.boost(points, param)
