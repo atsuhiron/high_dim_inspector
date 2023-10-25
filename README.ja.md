@@ -1,11 +1,14 @@
 # high_dim_inspector
 高次元のデータ点の分布を調査するためのツール群です。
 
-## 共通ルール
+## 1. Requirements
+Python >= 3.10
+
+## 2. 共通ルール
 データは `numpy.ndarray` で表します。データセットの形状は `(N, D)` で `N` がデータ数、 `D` が次元数であることを要請します。
 
-## 各ツールの説明
-### gen_data
+## 3. 各ツールの説明
+### 3-1. gen_data
 サンプルやその他のツールの評価用のデータを生成するためのスクリプトです。
 
 ```python
@@ -29,7 +32,7 @@ sampling_points, distribution = gen_data.gen_data_points(param)
 > [!NOTE]
 > `distribution` はあるグリッドでデータ点が生成される確率を表したものであり、統計学の文脈で使われる**確率分布関数**ではありません。(全空間を積分しても `1` にはなりません)
 
-### sparse_dense_booster
+### 3-2. sparse_dense_booster
 データ点の分布の疎密を増幅させるためのスクリプトです。
 
 ```python
@@ -40,7 +43,7 @@ points = np.random.random((10, 2)).astype(np.float32)
 
 param = sdb.create_sdb_param(
     points,
-    base_amp=0.6,   ## 増幅の強さを表す係数
+    base_amp=0.6,    ## 増幅の強さを表す係数
     t_end=0.2        ## 増幅を作用させる時間
 )
 boosted_points = sdb.boost(points, param)
@@ -61,3 +64,39 @@ param = sdb.SDBParam(
     delta_t=0.01      ## 時間の刻み幅
 )
 ```
+
+#### 3-2-1. 数理
+それぞれのデータ点を質量の等しい質点とみなし、仮想的な力 $f$ を作用させて運動させます。  
+時刻 $t+1$ での質点 $i$ の座標 $\mathbf{x}^{(t + 1)}_{i}$ は以下の式で表されます。
+
+```math
+\mathbf{x}^{(t + 1)}_{i} = \frac{1}{2} \sum_{j \neq i} \mathbf{f}^{(t)}_{ij} \Delta t^2 + \mathbf{x}^{(0)}_i
+```
+
+ここで $\Delta t$, $\mathbf{x}^{(0)}_i$ がそれぞれ時間の刻み幅、質点 $i$ の初期位置を表します。 
+
+以下、簡単のため時間を表す添え字を省略します。作用させる力 $f$ は他の各質点との距離に応じて変化します。
+二つの質点 $i, j$ の相対位置ベクトルを $\mathbf{r}_{ij} = \mathbf{x}_{j} - \mathbf{x}_{i}$
+、その $L^2$ ノルムを $r_{ij} = |\mathbf{r}_{ij}|$ とおけば、力は以下のように表されます。
+
+```math
+\mathbf{f}^{(t)}_{ij} = A \left( \frac{1}{r^2_{ij}} - \frac{1}{R^2_p}\right) \frac{\mathbf{r}_{ij}}{r_{ij}}
+```
+
+ここで $A$ 及び $R_p$ は定数です。$A$ は力に乗する比例定数で、データの次元数 $d$ とすると、
+
+```math
+A = \sqrt{\frac{d}{2}} {\rm base\_amp}
+```
+
+で表されます。$R_p$ は `pot_peak` の値がそのまま使用されます。  
+$r_{ij}$ が $R_p$ の値を超える（つまり $i$ と $j$ が遠くに位置する）と $\mathbf{f}$ の符号が反転し、引力が斥力に変わります。
+これにより、近いペアはより近くに移動し、遠いペアはより遠くに移動することになります。
+
+また、最初の式によって計算された質点の移動量はそのまま使われず、以下の式による正規化が行われる。
+
+```math
+\hat{x}_{i(d)} = \frac{(x_{(d)} - \mu_{(d)})}{\sigma_{(d)}}  
+```
+ここで $\mu$, $\sigma$ はそれぞれ平均と標準偏差で、添え字の $(d)$ は各次元での値を表します。
+この正規化ステップを飛ばすと、`pot_peak` の値次第では質点が無限に拡散してしまう。
