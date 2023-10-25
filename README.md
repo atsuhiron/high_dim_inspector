@@ -107,5 +107,5 @@ In addition, the coordinates of point mass calculated by the first equation are 
 where $\vec{\mu}$ and $\vec{\sigma}$ are vectors representing the mean and standard deviation, respectively, 
 the subscript $(d)$ means that the value is in each dimension 
 (That is, in numpy notation, $\vec{x}_ {i}$ is represented by `points[i, :]` and $\vec{x} _{(d)}$ by `points[:, d]`).
-$\oslash$ means _Hadamard_ division.
+$\oslash$ means _Hadamard_ division.  
 Skipping this normalization step will result in an infinite diffusion of the pawn points, depending on the value of `pot_peak`.
