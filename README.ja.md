@@ -90,10 +90,10 @@ r_{ij} = |\vec{r}_{ij}|
 \vec{f}^{(t)}_{ij} = A \left( \frac{1}{r^2_{ij}} - \frac{1}{R^2_p}\right) \frac{\vec{r}_{ij}}{r_{ij}}
 ```
 
-ここで $A$ 及び $R_p$ は定数です。$A$ は力に乗する比例定数で、データの次元数 $d$ とすると、
+ここで $A$ 及び $R_p$ は定数です。 $A$ は力に乗する比例定数で、データの次元数 $d$ とすると、
 
 ```math
-A = \sqrt{\frac{d}{2}} {\rm base\_amp}
+A = \sqrt{\frac{d}{2}} {\rm (base\_amp)}
 ```
 
 で表されます。 $R_p$ は `pot_peak` の値がそのまま使用されます。  
