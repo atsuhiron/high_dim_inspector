@@ -79,7 +79,7 @@ param = sdb.SDBParam(
 二つの質点 $i, j$ の相対位置ベクトルを $\vec{r} _{ij} = \vec{x} _{j} - \vec{x} _{i}$ 、その $L^2$ ノルムを $r _{ij} = |\vec{r} _{ij}|$ とおけば、力は以下のように表されます。
 
 ```math
-\vec{f}^{(t)}_{ij} = A \left( \frac{1}{r^2_{ij}} - \frac{1}{R^2_p}\right) \frac{\vec{r}_{ij}}{r_{ij}}
+\vec{f}_{ij} = A \left( \frac{1}{r^2_{ij}} - \frac{1}{R^2_p}\right) \frac{\vec{r}_{ij}}{r_{ij}}
 ```
 
 ここで $A$ 及び $R_p$ は定数です。 $A$ は力に乗する比例定数で、データの次元数を $d$ とすると、

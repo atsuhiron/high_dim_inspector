@@ -83,7 +83,7 @@ We express the relative position vector of two point masses $i, j$ as $\vec{r} _
 the force is expressed as follows:
 
 ```math
-\vec{f}^{(t)}_{ij} = A \left( \frac{1}{r^2_{ij}} - \frac{1}{R^2_p}\right) \frac{\vec{r}_{ij}}{r_{ij}}
+\vec{f}_{ij} = A \left( \frac{1}{r^2_{ij}} - \frac{1}{R^2_p}\right) \frac{\vec{r}_{ij}}{r_{ij}}
 ```
 
 where $A$ and $R_p$ are constants. Let $A$ be a proportionality constant multiplied by the force, 
