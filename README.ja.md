@@ -35,6 +35,8 @@ sampling_points, distribution = gen_data.gen_data_points(param)
 ### 3-2. sparse_dense_booster
 データ点の分布の疎密を増幅させるためのスクリプトです。
 
+![疎密増幅の結果](images/amplified_sample.png)
+
 ```python
 import numpy as np
 import sparse_dense_booster as sdb

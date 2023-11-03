@@ -37,6 +37,8 @@ sampling_points, distribution = gen_data.gen_data_points(param)
 ### 3-2. sparse_dense_booster
 This script is used to amplify the sparseness and density of the distribution of data points.
 
+![Sparse density amplified result](images/amplified_sample.png)
+
 ```python
 import numpy as np
 import sparse_dense_booster as sdb
