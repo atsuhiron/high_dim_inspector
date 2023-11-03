@@ -289,7 +289,7 @@ def create_sdb_param(pos: np.ndarray, base_amp: float, t_end: float) -> SDBParam
     shorter_outlier_index = max(1, int(np.ceil(0.005 * num**2)))
 
     min_dist = dist_non_zero[shorter_outlier_index]
-    pot_peak = np.median(dist_non_zero)
+    pot_peak = float(np.median(dist_non_zero))
     delta_t = 0.01
     iter_num = int(t_end / delta_t)
     amplitude = base_amp * np.sqrt(pos.shape[1] / 2)
@@ -305,11 +305,11 @@ if __name__ == "__main__":
     )
     _pos, _ = gen_data.gen_data_points(gd_param)
 
-    sdb_param = create_sdb_param(_pos, 0.6, 0.2)
-    print(sdb_param)
+    _sdb_param = create_sdb_param(_pos, 0.6, 0.2)
+    print(_sdb_param)
 
     plt.plot(_pos[:, 1], _pos[:, 0], "o", label="before")
-    _pos = boost(_pos, sdb_param)
+    _pos = boost(_pos, _sdb_param)
     plt.plot(_pos[:, 1], _pos[:, 0], "o", label="after")
     plt.legend()
     plt.show()
